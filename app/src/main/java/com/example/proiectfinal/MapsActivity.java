@@ -24,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -89,6 +90,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mGoogleApiClient.connect();
     }
 
+
     @Override
     public void onConnected(Bundle bundle) {
 
@@ -101,11 +103,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
+        tvDistanceDuration = (TextView) findViewById(R.id.tv_distance_time);
+        markerPoints = new ArrayList<LatLng>();
+        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+
+            @Override
+            public void onMapClick(LatLng point) {
+
+                // Already two locations
+                if(markerPoints.size()>1){
+                    markerPoints.clear();
+                    map.clear();
+                }
+
+                // Adding new item to the ArrayList
+                markerPoints.add(point);
+
+                // Creating MarkerOptions
+                MarkerOptions options = new MarkerOptions();
+
+                // Setting the position of the marker
+                options.position(point);
+
+                /**
+                 * For the start location, the color of marker is GREEN and
+                 * for the end location, the color of marker is RED.
+                 */
+                if(markerPoints.size()==1){
+                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                }else if(markerPoints.size()==2){
+                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                }
+                // Add new marker to the Google Map Android API V2
+                map.addMarker(options);
+                // Checks, whether start and end locations are captured
+                if(markerPoints.size() >= 2){
+                    LatLng origin = markerPoints.get(0);
+                    LatLng dest = markerPoints.get(1);
+                    // Getting URL to the Google Directions API
+                    String url = getDirectionsUrl(origin, dest);
+                    DownloadTask downloadTask = new DownloadTask();
+                    // Start downloading json data from Google Directions API
+                    downloadTask.execute(url);
+                }
+            }
+        });
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
@@ -142,7 +188,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String output = "json";
 
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+        String url = "https://www.google.com/maps/dir/"+output+"?"+parameters;
 
         return url;
     }
@@ -226,7 +272,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
 
             JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
+            List<List<HashMap<String, String>>> routes =  null;
 
             try{
                 jObject = new JSONObject(jsonData[0]);
