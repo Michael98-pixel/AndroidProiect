@@ -1,9 +1,11 @@
 package com.example.proiectfinal;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,13 +22,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -46,7 +46,7 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         LocationListener,GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener{
-
+    LocationManager locManager;
     private GoogleMap map;
     Location mLastLocation;
     GoogleApiClient mGoogleApiClient;
@@ -156,14 +156,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        mLastLocation = location;
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        map.animateCamera(CameraUpdateFactory.zoomTo(11));
+       // mLastLocation = location;
+//        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+//        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+//        map.animateCamera(CameraUpdateFactory.zoomTo(11));
+           if(location.getSpeed()<0.5){
+            TextView speedtextView = (TextView) findViewById(R.id.speedtextView);
+            speedtextView.setText("Current speed: " + "0.0" +" km/h");
+           }else{
+               TextView speedtextView = (TextView) findViewById(R.id.speedtextView);
+               speedtextView.setText("Current speed: " + location.getSpeed()*3600/1000 +" km/h");
+           }
         //stop location updates
-        if (mGoogleApiClient != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        }
+//        if (mGoogleApiClient != null) {
+//            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+//        }
     }
 
     @Override
