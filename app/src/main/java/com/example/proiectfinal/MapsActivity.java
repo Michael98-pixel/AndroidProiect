@@ -179,16 +179,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String str_dest = "destination="+dest.latitude+","+dest.longitude;
 
         // Sensor enabled
-        String sensor = "sensor=false";
+        //String sensor = "sensor=false";
 
         // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest+"&"+sensor;
+        String parameters = str_origin+"&"+str_dest;
 
         // Output format
         String output = "json";
 
         // Building the url to the web service
-        String url = "https://www.google.com/maps/dir/"+output+"?"+parameters;
+        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters+"&key=AIzaSyDOVhiZjl5KIpG5BmLWulad1g1EwCeQ9dg";
 
         return url;
     }
