@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:weightSum="1"
+    android:weightSum="5"
     >
     <TextView
         android:id="@+id/tv_distance_time"
@@ -34,6 +34,7 @@
     map:uiCompass="true"
     map:uiTiltGestures="true"
     map:uiRotateGestures="true"
+
     android:layout_below="@id/tv_distance_time"
     />
 
