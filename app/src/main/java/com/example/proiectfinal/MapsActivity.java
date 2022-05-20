@@ -1,11 +1,9 @@
 package com.example.proiectfinal;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,14 +39,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 
+@SuppressWarnings("deprecation")
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         LocationListener,GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener{
-    LocationManager locManager;
     private GoogleMap map;
-    Location mLastLocation;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     ArrayList<LatLng> markerPoints;
@@ -66,7 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -103,49 +101,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
-        tvDistanceDuration = (TextView) findViewById(R.id.tv_distance_time);
-        markerPoints = new ArrayList<LatLng>();
-        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        tvDistanceDuration = findViewById(R.id.tv_distance_time);
+        markerPoints = new ArrayList<>();
+        map.setOnMapClickListener(point -> {
 
-            @Override
-            public void onMapClick(LatLng point) {
+            // Already two locations
+            if(markerPoints.size()>1){
+                markerPoints.clear();
+                map.clear();
+            }
 
-                // Already two locations
-                if(markerPoints.size()>1){
-                    markerPoints.clear();
-                    map.clear();
-                }
+            // Adding new item to the ArrayList
+            markerPoints.add(point);
 
-                // Adding new item to the ArrayList
-                markerPoints.add(point);
+            // Creating MarkerOptions
+            MarkerOptions options = new MarkerOptions();
 
-                // Creating MarkerOptions
-                MarkerOptions options = new MarkerOptions();
+            // Setting the position of the marker
+            options.position(point);
 
-                // Setting the position of the marker
-                options.position(point);
-
-                /**
-                 * For the start location, the color of marker is GREEN and
-                 * for the end location, the color of marker is RED.
-                 */
-                if(markerPoints.size()==1){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                }else if(markerPoints.size()==2){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                }
-                // Add new marker to the Google Map Android API V2
-                map.addMarker(options);
-                // Checks, whether start and end locations are captured
-                if(markerPoints.size() >= 2){
-                    LatLng origin = markerPoints.get(0);
-                    LatLng dest = markerPoints.get(1);
-                    // Getting URL to the Google Directions API
-                    String url = getDirectionsUrl(origin, dest);
-                    DownloadTask downloadTask = new DownloadTask();
-                    // Start downloading json data from Google Directions API
-                    downloadTask.execute(url);
-                }
+            if(markerPoints.size()==1){
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            }else if(markerPoints.size()==2){
+                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            }
+            // Add new marker to the Google Map Android API V2
+            map.addMarker(options);
+            // Checks, whether start and end locations are captured
+            if(markerPoints.size() >= 2){
+                LatLng origin = markerPoints.get(0);
+                LatLng dest = markerPoints.get(1);
+                // Getting URL to the Google Directions API
+                String url = getDirectionsUrl(origin, dest);
+                DownloadTask downloadTask = new DownloadTask();
+                // Start downloading json data from Google Directions API
+                downloadTask.execute(url);
             }
         });
     }
@@ -154,6 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onConnectionSuspended(int i) {
     }
 
+
     @Override
     public void onLocationChanged(Location location) {
        // mLastLocation = location;
@@ -161,11 +152,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 //        map.animateCamera(CameraUpdateFactory.zoomTo(11));
            if(location.getSpeed()<0.5){
-            TextView speedtextView = (TextView) findViewById(R.id.speedtextView);
-            speedtextView.setText("Current speed: " + "0.0" +" km/h");
+            TextView speedtextView = findViewById(R.id.speedtextView);
+            speedtextView.setText(R.string.LowSpeed);
            }else{
-               TextView speedtextView = (TextView) findViewById(R.id.speedtextView);
-               speedtextView.setText("Current speed: " + location.getSpeed()*3600/1000 +" km/h");
+               TextView speedtextView = findViewById(R.id.speedtextView);
+               speedtextView.setText(String.format("Current speed: %s km/h", location.getSpeed() * 3600 / 1000));
            }
         //stop location updates
 //        if (mGoogleApiClient != null) {
@@ -195,9 +186,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String output = "json";
 
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters+"&key=AIzaSyDOVhiZjl5KIpG5BmLWulad1g1EwCeQ9dg";
 
-        return url;
+        return "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters+"&key=AIzaSyDOVhiZjl5KIpG5BmLWulad1g1EwCeQ9dg";
     }
 
     /** A method to download json data from url */
@@ -219,9 +209,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
 
-            StringBuffer sb  = new StringBuffer();
+            StringBuilder sb  = new StringBuilder();
 
-            String line = "";
+            String line;
             while( ( line = br.readLine())  != null){
                 sb.append(line);
             }
@@ -233,6 +223,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }catch(Exception e){
             Log.d("Exception", e.toString());
         }finally{
+            assert iStream != null;
             iStream.close();
             urlConnection.disconnect();
         }
@@ -240,7 +231,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // Fetches data from url passed
-    private class DownloadTask extends AsyncTask<String, Void, String> {
+    class DownloadTask extends AsyncTask<String, Void, String> {
 
         // Downloading data in non-ui thread
         @Override
@@ -272,7 +263,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     /** A class to parse the Google Places in JSON format */
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+    class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
         // Parsing the data in non-ui thread
         @Override
@@ -296,7 +287,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
+            ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
             MarkerOptions markerOptions = new MarkerOptions();
             String distance = "";
@@ -309,7 +300,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // Traversing through all the routes
             for(int i=0;i<result.size();i++){
-                points = new ArrayList<LatLng>();
+                points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
@@ -320,15 +311,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     HashMap<String,String> point = path.get(j);
 
                     if(j==0){    // Get distance from the list
-                        distance = (String)point.get("distance");
+                        distance = point.get("distance");
                         continue;
                     }else if(j==1){ // Get duration from the list
-                        duration = (String)point.get("duration");
+                        duration = point.get("duration");
                         continue;
                     }
 
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
+                    double lat = Double.parseDouble(Objects.requireNonNull(point.get("lat")));
+                    double lng = Double.parseDouble(Objects.requireNonNull(point.get("lng")));
                     LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
@@ -340,7 +331,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 lineOptions.color(Color.RED);
             }
 
-            tvDistanceDuration.setText("Distance:"+distance + ", Duration:"+duration);
+            tvDistanceDuration.setText(String.format("Distance:%s, Duration:%s", distance, duration));
 
             // Drawing polyline in the Google Map for the i-th route
             map.addPolyline(lineOptions);
