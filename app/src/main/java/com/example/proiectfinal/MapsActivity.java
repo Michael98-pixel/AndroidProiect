@@ -48,18 +48,19 @@ import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        LocationListener,GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        LocationListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     private GoogleMap map;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
-     Location mLastLocation;
+    Location mLastLocation;
     private SensorManager mSensorManager;
     private float mAccel;
     private float mAccelCurrent;
     private float mAccelLast;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mAccelCurrent = SensorManager.GRAVITY_EARTH;
         mAccelLast = SensorManager.GRAVITY_EARTH;
     }
+
     private final SensorEventListener mSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -93,21 +95,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
             }
         }
+
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
     };
+
     @Override
     protected void onResume() {
         mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                 SensorManager.SENSOR_DELAY_NORMAL);
         super.onResume();
     }
+
     @Override
     protected void onPause() {
         mSensorManager.unregisterListener(mSensorListener);
         super.onPause();
     }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
@@ -119,12 +125,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 buildGoogleApiClient();
                 map.setMyLocationEnabled(true);
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             map.setMyLocationEnabled(true);
         }
     }
+
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -148,7 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markerPoints = new ArrayList<>();
         map.setOnMapClickListener(point -> {
             // Already two locations
-            if(markerPoints.size()>1){
+            if (markerPoints.size() > 1) {
                 markerPoints.clear();
                 map.clear();
             }
@@ -159,15 +165,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MarkerOptions options = new MarkerOptions();
             // Setting the position of the marker
             options.position(point);
-            if(markerPoints.size()==1){
+            if (markerPoints.size() == 1) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            }else if(markerPoints.size()==2){
+            } else if (markerPoints.size() == 2) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             }
             // Add new marker to the Google Map Android API V2
             map.addMarker(options);
             // Checks, whether start and end locations are captured
-            if(markerPoints.size() >= 2){
+            if (markerPoints.size() >= 2) {
                 LatLng origin = markerPoints.get(0);
                 LatLng dest = markerPoints.get(1);
                 // Getting URL to the Google Directions API
@@ -178,43 +184,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
     @Override
     public void onConnectionSuspended(int i) {
     }
+
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
-           if(location.getSpeed()<0.75){
+        if (location.getSpeed() < 0.75) {
             TextView speedtextView = findViewById(R.id.speedtextView);
             speedtextView.setText(R.string.LowSpeed);
-           }else{
-               TextView speedtextView = findViewById(R.id.speedtextView);
-               speedtextView.setText(String.format("Current speed: %s km/h", location.getSpeed() * 3600 / 1000));
-           }
+        } else {
+            TextView speedtextView = findViewById(R.id.speedtextView);
+            speedtextView.setText(String.format("Current speed: %s km/h", Math.round((location.getSpeed() * 3600 / 1000) * 100) / 100));
+        }
     }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
-    private String getDirectionsUrl(LatLng origin,LatLng dest){
+
+    private String getDirectionsUrl(LatLng origin, LatLng dest) {
         // Origin of route
-        String str_origin = "origin="+origin.latitude+","+origin.longitude;
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
         // Destination of route
-        String str_dest = "destination="+dest.latitude+","+dest.longitude;
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
         // Sensor enabled
         //String sensor = "sensor=false";
         // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest;
+        String parameters = str_origin + "&" + str_dest;
         // Output format
         String output = "json";
         // Building the url to the web service
-        return "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters+"&key=AIzaSyDOVhiZjl5KIpG5BmLWulad1g1EwCeQ9dg";
+        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=AIzaSyDOVhiZjl5KIpG5BmLWulad1g1EwCeQ9dg";
     }
-    /** A method to download json data from url */
+
+    /**
+     * A method to download json data from url
+     */
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
-        try{
+        try {
             URL url = new URL(strUrl);
             // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -223,9 +236,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Reading data from url
             iStream = urlConnection.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-            StringBuilder sb  = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             String line;
-            while( ( line = br.readLine())  != null){
+            while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
 
@@ -233,9 +246,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             br.close();
 
-        }catch(Exception e){
+        } catch (Exception e) {
             Log.d("Exception", e.toString());
-        }finally{
+        } finally {
             assert iStream != null;
             iStream.close();
             urlConnection.disconnect();
@@ -251,14 +264,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected String doInBackground(String... url) {
             // For storing data from web service
             String data = "";
-            try{
+            try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-            }catch(Exception e){
-                Log.d("Background Task",e.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
             }
             return data;
         }
+
         // Executes in UI thread, after the execution of
         // doInBackground()
         @Override
@@ -269,25 +283,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             parserTask.execute(result);
         }
     }
-    /** A class to parse the Google Places in JSON format */
-    class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+
+    /**
+     * A class to parse the Google Places in JSON format
+     */
+    class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
         // Parsing the data in non-ui thread
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
             JSONObject jObject;
-            List<List<HashMap<String, String>>> routes =  null;
+            List<List<HashMap<String, String>>> routes = null;
 
-            try{
+            try {
                 jObject = new JSONObject(jsonData[0]);
                 DirectionsJSONParser parser = new DirectionsJSONParser();
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return routes;
         }
+
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
@@ -296,23 +314,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String distance = "";
             String duration = "";
 
-            if(result.size()<1){
+            if (result.size() < 1) {
                 Toast.makeText(getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
                 return;
             }
             // Traversing through all the routes
-            for(int i=0;i<result.size();i++){
+            for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
                 // Fetching all the points in i-th route
-                for(int j=0;j<path.size();j++){
-                    HashMap<String,String> point = path.get(j);
-                    if(j==0){    // Get distance from the list
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+                    if (j == 0) {    // Get distance from the list
                         distance = point.get("distance");
                         continue;
-                    }else if(j==1){ // Get duration from the list
+                    } else if (j == 1) { // Get duration from the list
                         duration = point.get("duration");
                         continue;
                     }
