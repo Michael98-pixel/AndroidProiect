@@ -154,7 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markerPoints = new ArrayList<>();
         map.setOnMapClickListener(point -> {
             // Already two locations
-            if (markerPoints.size() > 1) {
+            if (markerPoints.size() >= 1) {
                 markerPoints.clear();
                 map.clear();
             }
@@ -167,15 +167,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             options.position(point);
             if (markerPoints.size() == 1) {
                 options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            } else if (markerPoints.size() == 2) {
-                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             }
+//            } else if (markerPoints.size() == 2) {
+//                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//            }
             // Add new marker to the Google Map Android API V2
             map.addMarker(options);
             // Checks, whether start and end locations are captured
-            if (markerPoints.size() >= 2) {
-                LatLng origin = markerPoints.get(0);
-                LatLng dest = markerPoints.get(1);
+            if (markerPoints.size() >= 1) {
+                LatLng origin = new LatLng (mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                LatLng dest = markerPoints.get(0);
                 // Getting URL to the Google Directions API
                 String url = getDirectionsUrl(origin, dest);
                 DownloadTask downloadTask = new DownloadTask();
@@ -197,7 +198,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             speedtextView.setText(R.string.LowSpeed);
         } else {
             TextView speedtextView = findViewById(R.id.speedtextView);
-            speedtextView.setText(String.format("Current speed: %s km/h", Math.round((location.getSpeed() * 3600 / 1000) * 100) / 100));
+            speedtextView.setText(String.format("Current speed: %s km/h", Math.round((location.getSpeed() * 3600 / 1000))));
         }
     }
 
