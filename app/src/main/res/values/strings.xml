@@ -2,7 +2,7 @@
     <string name="app_name">ProiectFinal</string>
     <string name="title_activity_maps">GPS</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Tap two locations in the map</string>
+    <string name="hello_world">Tap a location on the map</string>
     <string name="str_tv_distance_time">Distance</string>
     <string name="LowSpeed">Current speed: 0.0 km/h</string>
 </resources>

@@ -171,7 +171,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //            } else if (markerPoints.size() == 2) {
 //                options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 //            }
-            // Add new marker to the Google Map Android API V2
+            // Add new marker to the Google Map Android API
             map.addMarker(options);
             // Checks, whether start and end locations are captured
             if (markerPoints.size() >= 1) {
@@ -211,8 +211,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
         // Destination of route
         String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-        // Sensor enabled
-        //String sensor = "sensor=false";
         // Building the parameters to the web service
         String parameters = str_origin + "&" + str_dest;
         // Output format
@@ -273,7 +271,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             return data;
         }
-
         // Executes in UI thread, after the execution of
         // doInBackground()
         @Override
